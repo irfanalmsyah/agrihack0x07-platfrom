@@ -28,6 +28,33 @@ class UserSchema(ma.ModelSchema):
             validate.Length(min=1, max=128, error="User names must not be empty")
         ],
     )
+    nama_lengkap = field_for(
+        Users,
+        "nama_lengkap",
+        required=True,
+        allow_none=False,
+        validate=[
+            validate.Length(min=1, max=128, error="Nama Lengkap must not be empty")
+        ],
+    )
+    angkatan = field_for(
+        Users,
+        "angkatan",
+        required=True,
+        allow_none=False,
+        validate=[
+            validate.Length(min=1, max=2, error="Angkatan must not be empty")
+        ],
+    )
+    nim = field_for(
+        Users,
+        "nim",
+        required=True,
+        allow_none=False,
+        validate=[
+            validate.Length(min=9, max=12, error="NIM must not be empty")
+        ],
+    )
     email = field_for(
         Users,
         "email",
@@ -87,7 +114,7 @@ class UserSchema(ma.ModelSchema):
             if name == current_user.name:
                 return data
             else:
-                name_changes = get_config("name_changes", default=True)
+                name_changes = get_config("name_changes", default=False)
                 if bool(name_changes) is False:
                     raise ValidationError(
                         "Name changes are disabled", field_names=["name"]
@@ -337,10 +364,14 @@ class UserSchema(ma.ModelSchema):
         "admin": [
             "website",
             "name",
+            "nim",
+            "nama_lengkap",
+            "angkatan",
             "created",
             "country",
             "banned",
             "email",
+            "ispeserta",
             "affiliation",
             "secret",
             "bracket",

@@ -188,7 +188,8 @@ def setup():
                 ConfigTypes.CHALLENGE_VISIBILITY, ChallengeVisibilityTypes.PRIVATE
             )
             set_config(
-                ConfigTypes.REGISTRATION_VISIBILITY, RegistrationVisibilityTypes.PUBLIC
+                #ConfigTypes.REGISTRATION_VISIBILITY, RegistrationVisibilityTypes.PUBLIC
+                ConfigTypes.REGISTRATION_VISIBILITY, RegistrationVisibilityTypes.PRIVATE
             )
             set_config(ConfigTypes.SCORE_VISIBILITY, ScoreVisibilityTypes.PUBLIC)
             set_config(ConfigTypes.ACCOUNT_VISIBILITY, AccountVisibilityTypes.PUBLIC)
@@ -310,6 +311,9 @@ def settings():
     user = get_current_user()
     name = user.name
     email = user.email
+    nim = user.nim
+    nama_lengkap = user.nama_lengkap
+    angkatan = user.angkatan
     website = user.website
     affiliation = user.affiliation
     country = user.country
@@ -340,9 +344,12 @@ def settings():
         "settings.html",
         name=name,
         email=email,
-        website=website,
-        affiliation=affiliation,
-        country=country,
+        nim=nim,
+        nama_lengkap=nama_lengkap,
+        angkatan=angkatan,
+        #website=website,
+        #affiliation=affiliation,
+        #country=country,
         tokens=tokens,
         prevent_name_change=prevent_name_change,
         infos=infos,

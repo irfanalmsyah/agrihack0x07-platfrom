@@ -3,7 +3,6 @@ from collections import defaultdict
 
 from flask_marshmallow import Marshmallow
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import column_property, validates
 
@@ -24,16 +23,6 @@ def get_class_by_tablename(tablename):
         if hasattr(c, "__tablename__") and c.__tablename__ == tablename:
             return c
     return None
-
-
-@compiles(db.DateTime, "mysql")
-def compile_datetime_mysql(_type, _compiler, **kw):
-    """
-    This decorator makes the default db.DateTime class always enable fsp to enable millisecond precision
-    https://dev.mysql.com/doc/refman/5.7/en/fractional-seconds.html
-    https://docs.sqlalchemy.org/en/14/core/custom_types.html#overriding-type-compilation
-    """
-    return "DATETIME(6)"
 
 
 class Notifications(db.Model):
@@ -323,10 +312,14 @@ class Users(db.Model):
     oauth_id = db.Column(db.Integer, unique=True)
     # User names are not constrained to be unique to allow for official/unofficial teams.
     name = db.Column(db.String(128))
+    nama_lengkap = db.Column(db.String(128))
     password = db.Column(db.String(128))
     email = db.Column(db.String(128), unique=True)
+    nim = db.Column(db.String(12))
+    angkatan = db.Column(db.String(2))
     type = db.Column(db.String(80))
     secret = db.Column(db.String(128))
+    ispeserta = db.Column(db.Boolean, default=True)
 
     # Supplementary attributes
     website = db.Column(db.String(128))
@@ -403,6 +396,15 @@ class Users(db.Model):
 
         if scores_visible():
             return self.get_place(admin=False)
+        else:
+            return None
+
+    @property
+    def place2(self):
+        from CTFd.utils.config.visibility import scores_visible
+
+        if scores_visible():
+            return self.get_place(admin=False, ispeserta=self.ispeserta)
         else:
             return None
 
@@ -494,7 +496,7 @@ class Users(db.Model):
             return 0
 
     @cache.memoize()
-    def get_place(self, admin=False, numeric=False):
+    def get_place(self, admin=False, numeric=False, ispeserta=None):
         """
         This method is generally a clone of CTFd.scoreboard.get_standings.
         The point being that models.py must be self-reliant and have little
@@ -504,7 +506,7 @@ class Users(db.Model):
         from CTFd.utils.scores import get_user_standings
         from CTFd.utils.humanize.numbers import ordinalize
 
-        standings = get_user_standings(admin=admin)
+        standings = get_user_standings(admin=admin, ispeserta=ispeserta)
 
         for i, user in enumerate(standings):
             if user.user_id == self.id:
